@@ -32,6 +32,10 @@ Parameters:
       - Yes
       - No
 
+  MediaResourceFunction:
+    Description: Function to lookup existing file names to fetch the thumbnail frame offset
+    Type: String
+
   EnableMediaPackage:
     Description: If enabled, MediaPackage VOD will be included in the workflow
     Type: String
@@ -97,6 +101,8 @@ Metadata:
         default: Workflow trigger
       FrameCapture:
         default: Enable Frame Capture
+      MediaResourceFunction:
+        default: Media Resource Function
       EnableMediaPackage:
         default: Enable MediaPackage
       AcceleratedTranscoding:
@@ -723,6 +729,7 @@ Resources:
           Destination: !Ref Destination
           FrameCapture: !Ref FrameCapture
           ArchiveSource: !Ref Glacier
+          MediaResourceFunction: !Ref MediaResourceFunction
           MediaConvert_Template_2160p:
             !If
               - IsMediaPackageEnabled
@@ -1489,9 +1496,32 @@ Resources:
             },
             "Frame Capture": {
               "Type": "Pass",
-              "Next": "Encode Job Submit"
+              "Next": "Thumbnail Capture Check"
             },
             "No Frame Capture": {
+              "Type": "Pass",
+              "Next": "Thumbnail Capture Check"
+            },
+            "Thumbnail Capture Check": {
+              "Type": "Choice",
+              "Choices": [
+                {
+                  "Variable": "$.thumbnailFrameOffset",
+                  "NumericGreaterThanEquals": 0,
+                  "Next": "Thumbnail Capture"
+                },
+                {
+                  "Variable": "$.thumbnailFrameOffset",
+                  "IsPresent": false,
+                  "Next": "No Thumbnail Capture"
+                }
+              ]
+            },
+            "Thumbnail Capture": {
+              "Type": "Pass",
+              "Next": "Encode Job Submit"
+            },
+            "No Thumbnail Capture": {
               "Type": "Pass",
               "Next": "Encode Job Submit"
             },

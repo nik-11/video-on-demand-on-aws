@@ -41,6 +41,18 @@ describe('#INPUT VALIDATE::', () => {
         }]
     };
 
+    const _video_existing = {
+        workflowTrigger: 'Video',
+        guid: '1234-1223232-212121',
+        Records: [{
+            s3: {
+                object: {
+                    key: 'GrafaLearning_Ep05.mp4'
+                }
+            }
+        }]
+    };
+
     const _json = {
         workflowTrigger: 'Metadata',
         guid: '1234-1223232-212121',
@@ -58,6 +70,13 @@ describe('#INPUT VALIDATE::', () => {
     it('should succeed when processing valid source video', async () => {
         const response = await lambda.handler(_video);
         expect(response.srcVideo).to.equal('video.mp4');
+        expect(response.thumbnailFrameOffset).to.be.undefined;
+    });
+
+    it('should succeed when processing valid source video that exists', async () => {
+        const response = await lambda.handler(_video_existing);
+        expect(response.srcVideo).to.equal('GrafaLearning_Ep05.mp4');
+        expect(response.thumbnailFrameOffset).to.be.greaterThan(-1);
     });
 
     it('should succeed when processing valid metadata', async () => {

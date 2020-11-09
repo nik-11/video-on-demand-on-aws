@@ -8,7 +8,7 @@
   "main": "index.js",
   "scripts": {
     "pretest": "npm i --quiet",
-    "test": "mocha lib/*.spec.js"
+    "test": "cross-env TESTING=true MediaResourceFunction=grafa-media-stack-GrafaMediaFunction-9QZFFTICT47C mocha lib/*.spec.js --timeout 20000"
   },
   "dependencies": {
     "moment": "^2.24.0"
@@ -17,6 +17,7 @@
     "aws-sdk": "^2.609.0",
     "aws-sdk-mock": "^5.0.0",
     "chai": "^4.2.0",
+    "cross-env": "^7.0.2",
     "mocha": "^7.0.0",
     "sinon": "^8.1.1",
     "sinon-chai": "^3.4.0"
