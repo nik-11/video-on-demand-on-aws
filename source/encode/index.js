@@ -273,9 +273,9 @@ exports.handler = async (event) => {
         //if enabled the TimeCodeConfig needs to be set to ZEROBASED not passthrough
         //https://docs.aws.amazon.com/mediaconvert/latest/ug/job-requirements.html
         if (event.acceleratedTranscoding === 'PREFERRED' || event.acceleratedTranscoding === 'ENABLED') {
-            job.AccelerationSettings = {"Mode" : event.acceleratedTranscoding}
-            job.Settings.TimecodeConfig = {"Source" : "ZEROBASED"}
-            job.Settings.Inputs[0].TimecodeSource = "ZEROBASED"
+            job.AccelerationSettings = {"Mode": event.acceleratedTranscoding};
+            job.Settings.TimecodeConfig = {"Source": "ZEROBASED"};
+            job.Settings.Inputs[0].TimecodeSource = "ZEROBASED";
         }
 
         let data = await mediaconvert.createJob(job).promise();

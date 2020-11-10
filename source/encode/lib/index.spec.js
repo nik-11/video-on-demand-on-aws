@@ -42,6 +42,17 @@ describe('#ENCODE::', () => {
         acceleratedTranscoding:'ENABLED'
     };
 
+    const _withThumbnailFrameOffset = {
+        guid: '12345678',
+        jobTemplate: 'jobTemplate',
+        srcVideo: 'video.mp4',
+        srcBucket: 'src',
+        destBucket: 'dest',
+        frameCapture: true,
+        thumbnailFrameOffset: 100,
+        acceleratedTranscoding: 'ENABLED'
+    };
+
     const data = {
         Job: {
             Id: '12345',
@@ -81,6 +92,15 @@ describe('#ENCODE::', () => {
         const response = await lambda.handler(_withframe);
         expect(response.encodeJobId).to.equal('12345');
         expect(response.encodingJob.Settings.OutputGroups[1].CustomName).to.equal('Frame Capture');
+    });
+
+    it('should succeed when thumbnail frame offset is at least 0', async () => {
+        AWS.mock('MediaConvert', 'getJobTemplate', Promise.resolve(tmpl));
+        AWS.mock('MediaConvert', 'createJob', Promise.resolve(data));
+
+        const response = await lambda.handler(_withThumbnailFrameOffset);
+        expect(response.encodeJobId).to.equal('12345');
+        expect(response.encodingJob.Settings.OutputGroups[2].CustomName).to.equal('Single Thumbnail Capture');
     });
 
     it('should apply custom settings when template is custom', async () => {

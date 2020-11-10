@@ -75,37 +75,14 @@ exports.handler = async (event) => {
 
         // Check source file is accessible in s3
         await s3.headObject({Bucket: data.srcBucket, Key: data.srcVideo}).promise();
-
+        console.log(data.srcVideo);
+        data.thumbnailFrameOffset = await getThumbnailOffset(data.srcVideo);
+        
         break;
 
       case 'Video':
         data.srcVideo = decodeURIComponent(event.Records[0].s3.object.key.replace(/\+/g, " "));
-        // Find MediaResource by srcVideo name and set the thumbnailFrameOffset value if not null
-        const params = {
-          FunctionName: process.env.MediaResourceFunction, // grafa-media-stack-GrafaMediaFunction-9QZFFTICT47C
-          InvocationType: 'RequestResponse',
-          LogType: 'Tail',
-          Payload: JSON.stringify({
-            httpMethod: 'GET',
-            queryStringParameters: {
-              videoFileName: data.srcVideo 
-            }
-          })
-        };
-        const response = await lambda.invoke(params).promise().catch(err => {
-          console.log('Could not fetch %s::%o', process.env.MediaResourceFunction, err);
-          return null;
-        });
-        if (response) {
-          const payload = JSON.parse(response.Payload);
-          if (payload.statusCode === 200) {
-            const body = JSON.parse(payload.body);
-            const offset = parseInt(body.ThumbNailFrameOffset);
-            if (offset >= 0) {
-              data.thumbnailFrameOffset = offset;
-            }
-          }
-        }
+        data.thumbnailFrameOffset = await getThumbnailOffset(data.srcVideo);
         break;
 
       default:
@@ -121,3 +98,54 @@ exports.handler = async (event) => {
 
   return data;
 };
+
+/**
+ * Find MediaResource by srcVideo name and return the thumbnailFrameOffset value if not null
+ * Attempts to find an existing MediaResource up to 3 times (with a 10 second pause between each try)
+ * @param fileName
+ */
+const getThumbnailOffset = async (fileName) => {
+  const params = {
+    FunctionName: process.env.MediaResourceFunction, // grafa-media-stack-GrafaMediaFunction-9QZFFTICT47C
+    InvocationType: 'RequestResponse',
+    LogType: 'Tail',
+    Payload: JSON.stringify({
+      httpMethod: 'GET',
+      queryStringParameters: {
+        videoFileName: fileName
+      }
+    })
+  };
+  let returnVal = 0;
+  let tries = 1;
+  do {
+    const response = await lambda.invoke(params).promise().catch(err => {
+      console.log('Could not fetch %s::%o', process.env.MediaResourceFunction, err);
+      return null;
+    });
+    if (response) {
+      const payload = JSON.parse(response.Payload);
+      console.log('Status code: %d', payload.statusCode);
+      if (payload.statusCode === 200) {
+        const body = JSON.parse(payload.body);
+        const offset = parseInt(body.ThumbNailFrameOffset);
+        if (offset >= 0) {
+          returnVal = offset;
+        }
+        break;
+      } else {
+        // Wait 10 seconds before trying again
+        await sleep(10000);
+        tries++;
+      }
+    }
+  } while (tries <= 3);
+  return returnVal;
+};
+
+/**
+ * Sleep function to pause execution of a function
+ * @param delay
+ * @returns {Promise<unknown>}
+ */
+const sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay));

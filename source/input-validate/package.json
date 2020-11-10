@@ -8,7 +8,7 @@
   "main": "index.js",
   "scripts": {
     "pretest": "npm i --quiet",
-    "test": "cross-env TESTING=true MediaResourceFunction=grafa-media-stack-GrafaMediaFunction-9QZFFTICT47C mocha lib/*.spec.js --timeout 20000"
+    "test": "cross-env TESTING=true MediaResourceFunction=grafa-media-stack-GrafaMediaFunction-9QZFFTICT47C mocha lib/*.spec.js --timeout 60000"
   },
   "dependencies": {
     "moment": "^2.24.0"

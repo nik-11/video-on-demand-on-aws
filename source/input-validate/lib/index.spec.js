@@ -70,7 +70,7 @@ describe('#INPUT VALIDATE::', () => {
     it('should succeed when processing valid source video', async () => {
         const response = await lambda.handler(_video);
         expect(response.srcVideo).to.equal('video.mp4');
-        expect(response.thumbnailFrameOffset).to.be.undefined;
+        expect(response.thumbnailFrameOffset).to.be.greaterThan(-1);
     });
 
     it('should succeed when processing valid source video that exists', async () => {
