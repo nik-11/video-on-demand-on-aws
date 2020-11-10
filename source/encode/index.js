@@ -103,49 +103,16 @@ const getFrameGroup = (event, outputPath) => ({
             ScalingBehavior: 'DEFAULT',
             AntiAlias: 'ENABLED',
             CodecSettings: {
-                FrameCaptureSettings: {
+                FrameCaptureSettings: event.thumbnailFrameOffset >= 0 ? {
                     MaxCaptures: 10000000,
                     Quality: 80,
                     FramerateDenominator: 5,
                     FramerateNumerator: 1
-                },
-                Codec: 'FRAME_CAPTURE'
-            },
-            DropFrameTimecode: 'ENABLED'
-        }
-    }]
-});
-
-const getThumbnail = (event, outputPath) => ({
-    CustomName: 'Single Thumbnail Capture',
-    Name: 'File Group',
-    OutputGroupSettings: {
-        Type: 'FILE_GROUP_SETTINGS',
-        FileGroupSettings: {
-            Destination: `${outputPath}/thumbnail/`
-        }
-    },
-    Outputs: [{
-        NameModifier: '_thumb',
-        ContainerSettings: {
-            Container: 'RAW'
-        },
-        VideoDescription: {
-            ColorMetadata: 'INSERT',
-            AfdSignaling: 'NONE',
-            Sharpness: 100,
-            Height: event.frameHeight,
-            RespondToAfd: 'NONE',
-            TimecodeInsertion: 'DISABLED',
-            Width: event.frameWidth,
-            ScalingBehavior: 'DEFAULT',
-            AntiAlias: 'ENABLED',
-            CodecSettings: {
-                FrameCaptureSettings: {
-                    MaxCaptures: 1,
+                } : {
+                    MaxCaptures: 20,
                     Quality: 80,
-                    FramerateDenominator: event.thumbnailFrameOffset,
-                    FramerateNumerator: 1
+                    FramerateDenominator: 1,
+                    FramerateNumerator: event.thumbnailFrameOffset
                 },
                 Codec: 'FRAME_CAPTURE'
             },
@@ -215,10 +182,6 @@ exports.handler = async (event) => {
         const dash = getDashGroup(outputPath);
         const cmaf = getCmafGroup(outputPath);
         const mss = getMssGroup(outputPath);
-        let thumbnailCapture;
-        if (event.thumbnailFrameOffset >= 0) {
-            thumbnailCapture = getThumbnail(event, outputPath);
-        }
         const frameCapture = getFrameGroup(event, outputPath);
 
         let tmpl = await mediaconvert.getJobTemplate({ Name: event.jobTemplate }).promise();
@@ -265,9 +228,6 @@ exports.handler = async (event) => {
 
         if (event.frameCapture) {
             job.Settings.OutputGroups.push(frameCapture);
-        }
-        if (event.thumbnailFrameOffset >= 0) {
-            job.Settings.OutputGroups.push(thumbnailCapture);
         }
 
         //if enabled the TimeCodeConfig needs to be set to ZEROBASED not passthrough

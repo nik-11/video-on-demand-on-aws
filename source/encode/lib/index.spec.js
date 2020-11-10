@@ -100,7 +100,7 @@ describe('#ENCODE::', () => {
 
         const response = await lambda.handler(_withThumbnailFrameOffset);
         expect(response.encodeJobId).to.equal('12345');
-        expect(response.encodingJob.Settings.OutputGroups[2].CustomName).to.equal('Single Thumbnail Capture');
+        expect(response.encodingJob.Settings.OutputGroups[1].CustomName).to.equal('Frame Capture');
     });
 
     it('should apply custom settings when template is custom', async () => {
