@@ -37,6 +37,7 @@ class BuildPackageCommand(Command):
         assert self.zip_path is not None, 'Invalid zip_path'
 
     def run(self):
+        run_bash_command('chmod a+r *')
         run_bash_command(f'zip -rq9 {self.zip_path} lambda_function.py ./bin/*')
 
 class UnitTestsCommand(TestCommand):

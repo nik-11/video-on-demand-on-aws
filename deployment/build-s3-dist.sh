@@ -76,8 +76,8 @@ for folder in */ ; do
     if [ -e "package.json" ]; then
         rm -rf node_modules/
         npm i --production
-
-        zip -q -r9 $zip_path .
+        chmod a+r *
+        zip -r $zip_path *
     elif [ -e "setup.py" ]; then
         # If you're running this command on macOS and Python3 has been installed using Homebrew, you might see this issue:
         #    DistutilsOptionError: must supply either home or prefix/exec-prefix
